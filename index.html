@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MIPS Pipeline Simulator</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div id="root">
+      <h1>MIPS Simulator</h1>
+      <div id="input">
+        <h2>Input mode:</h2>
+        <input
+          type="radio"
+          autocomplete="off"
+          id="fileInput"
+          name="inputMode"
+          value="file"
+          checked="checked"
+          onclick="handleRadioClick(event)"
+        />
+        <label for="fileInput">File</label>
+        <input
+          type="radio"
+          autocomplete="off"
+          id="textInput"
+          name="inputMode"
+          value="text"
+          onclick="handleRadioClick(event)"
+        />
+        <label for="textInput">Text</label>
+
+        <div id="fileInputDiv" style="display: none">
+          <label for="fileInputField">Instruction file: </label>
+          <input
+            type="file"
+            id="fileInputField"
+            autocomplete="off"
+            onchange="handleFileChange(event)"
+          />
+        </div>
+
+        <div id="textInputDiv" style="display: none">
+          <label for="textInputField">Instructions: </label>
+          <textarea
+            id="textInputField"
+            autocomplete="off"
+            onchange="handleTextChange(event)"
+          ></textarea>
+        </div>
+      </div>
+
+      <h2>Controls:</h2>
+
+      <div id="controls">
+        <button>Run</button>
+        <button onclick="step() ">Step</button>
+        <button>Stop</button>
+        <button>Reset</button>
+      </div>
+
+      <h2>Stats:</h2>
+
+      <div id="stats">
+        <p>Clock:</p>
+        <p>PC value:</p>
+      </div>
+      <div id="registersContainer">
+        <div id="sRegisters" class="registersTable">
+          <table>
+            <tr>
+              <th>Register</th>
+              <th>Value</th>
+            </tr>
+            <tr>
+              <td>s0</td>
+              <td>0</td>
+            </tr>
+            <tr>
+              <td>s1</td>
+              <td>0</td>
+            </tr>
+            <tr>
+              <td>s2</td>
+              <td>0</td>
+            </tr>
+            <tr>
+              <td>s3</td>
+              <td>0</td>
+            </tr>
+            <tr>
+              <td>s4</td>
+              <td>0</td>
+            </tr>
+            <tr>
+              <td>s5</td>
+              <td>0</td>
+            </tr>
+            <tr>
+              <td>s6</td>
+              <td>0</td>
+            </tr>
+            <tr>
+              <td>s7</td>
+              <td>0</td>
+            </tr>
+          </table>
+        </div>
+
+        <div id="tRegisters" class="registersTable">
+          <table>
+            <tr>
+              <th>Register</th>
+              <th>Value</th>
+            </tr>
+            <tr>
+              <td>t0</td>
+              <td>0</td>
+            </tr>
+            <tr>
+              <td>t1</td>
+              <td>0</td>
+            </tr>
+            <tr>
+              <td>t2</td>
+              <td>0</td>
+            </tr>
+            <tr>
+              <td>t3</td>
+              <td>0</td>
+            </tr>
+            <tr>
+              <td>t4</td>
+              <td>0</td>
+            </tr>
+            <tr>
+              <td>t5</td>
+              <td>0</td>
+            </tr>
+            <tr>
+              <td>t6</td>
+              <td>0</td>
+            </tr>
+            <tr>
+              <td>t7</td>
+              <td>0</td>
+            </tr>
+            <tr>
+              <td>t8</td>
+              <td>0</td>
+            </tr>
+            <tr>
+              <td>t9</td>
+              <td>0</td>
+            </tr>
+          </table>
+        </div>
+
+        <div id="aRegisters" class="registersTable">
+          <table>
+            <tr>
+              <th>Register</th>
+              <th>Value</th>
+            </tr>
+            <tr>
+              <td>a0</td>
+              <td>0</td>
+            </tr>
+            <tr>
+              <td>a1</td>
+              <td>0</td>
+            </tr>
+            <tr>
+              <td>a2</td>
+              <td>0</td>
+            </tr>
+            <tr>
+              <td>a3</td>
+              <td>0</td>
+            </tr>
+          </table>
+        </div>
+
+        <div id="vRegisters" class="registersTable">
+          <table>
+            <tr>
+              <th>Register</th>
+              <th>Value</th>
+            </tr>
+            <tr>
+              <td>v0</td>
+              <td>0</td>
+            </tr>
+            <tr>
+              <td>v1</td>
+              <td>0</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <div id="stages">
+        <table>
+          <tr>
+            <th>Stage</th>
+            <th>Instruction (bits)</th>
+            <th>Instruction</th>
+          </tr>
+          <tr>
+            <td>Instruction Fecth</td>
+            <td id="ifBits"></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>Instruction Decode</td>
+            <td id="idBits"></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>Execute</td>
+            <td id="exBits"></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>Memory Access</td>
+            <td id="memBits"></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>Write Back</td>
+            <td id="wbBits"></td>
+            <td></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <script src="./src/modules/ALU.js"></script>
+    <script src="./src/modules/ControlUnit.js"></script>
+    <script src="./src/modules/DataMemory.js"></script>
+    <script src="./src/modules/HazardDetector.js"></script>
+    <script src="./src/modules/InstructionMemory.js"></script>
+    <script src="./src/modules/Registers.js"></script>
+
+    <script src="./src/stages/Execute.js"></script>
+    <script src="./src/stages/InstructionDecode.js"></script>
+    <script src="./src/stages/InstructionFetch.js"></script>
+    <script src="./src/stages/MemoryAccess.js"></script>
+    <script src="./src/stages/WriteBack.js"></script>
+
+    <script src="./src/utils/Instruction.js"></script>
+    <script src="./src/Simulator.js"></script>
+
+    <script src="script.js"></script>
+  </body>
+</html>

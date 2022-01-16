@@ -1,0 +1,7 @@
+#registersContainer {
+    display: flex;
+}
+
+.registersTable {
+    margin-right: 50px;
+}
