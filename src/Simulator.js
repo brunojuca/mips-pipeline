@@ -22,7 +22,7 @@ class Simulator {
 
   constructor(instructionsString) {
     this.instructionMemory.loadInstructions(instructionsString);
-    this.instructionMemory.printArray();
+    //this.instructionMemory.printArray();
     this.pc = 0;
     this.clock = 0;
   }
@@ -36,6 +36,20 @@ class Simulator {
 
   step() {
     this.updatePipeline();
+    console.log("InIF: ", this.instructionInIF);
+    console.log("InID: ", this.instructionInID);
+    console.log("InEX: ", this.instructionInEX);
+    console.log("InMEM: ", this.instructionInMEM);
+    console.log("InWB: ", this.instructionInWB);
+
+    if (this.instructionInWB && this.instructionInWB.concatInstruction)
+      this.writeBack();
+    if (this.instructionInMEM && this.instructionInMEM.concatInstruction)
+      this.memoryAccess();
+    if (this.instructionInEX && this.instructionInEX.concatInstruction)
+      this.execute();
+    if (this.instructionInID && this.instructionInID.concatInstruction)
+      this.instructionDecode();
     this.instructionFetch();
 
     this.clock += 1;
@@ -55,20 +69,24 @@ class Simulator {
     this.pc += 4;
 
     this.IFIDRegister.update(this.pc, this.instructionFetched);
+
+    console.log("IFID REGISTER");
+    console.log(this.IFIDRegister);
   }
 
   instructionDecode() {
-    if (!this.instructionInID) return;
+    if (!this.IFIDRegister.instruction) return;
 
     // test inst = 000000 10001 10010 01000 00000 100000
-    let opcode = this.instructionInID.concatInstruction >>> 26;
-    let rs = (this.instructionInID.concatInstruction << 6) >>> 27; // 17
-    let rt = (this.instructionInID.concatInstruction << 11) >>> 27; // 18
-    let rd = (this.instructionInID.concatInstruction << 16) >>> 27; // 8
-    let shamt = (this.instructionInID.concatInstruction << 21) >>> 27; // 0
-    let funct = (this.instructionInID.concatInstruction << 26) >>> 26; // 32
-    let immediate = (this.instructionInID.concatInstruction << 16) >>> 16; // 16416
-    let address = (this.instructionInID.concatInstruction << 6) >>> 6; // 36847648
+    let opcode = this.IFIDRegister.instruction.concatInstruction >>> 26;
+    let rs = (this.IFIDRegister.instruction.concatInstruction << 6) >>> 27; // 17
+    let rt = (this.IFIDRegister.instruction.concatInstruction << 11) >>> 27; // 18
+    let rd = (this.IFIDRegister.instruction.concatInstruction << 16) >>> 27; // 8
+    let shamt = (this.IFIDRegister.instruction.concatInstruction << 21) >>> 27; // 0
+    let funct = (this.IFIDRegister.instruction.concatInstruction << 26) >>> 26; // 32
+    let immediate =
+      (this.IFIDRegister.instruction.concatInstruction << 16) >>> 16; // 16416
+    let address = (this.IFIDRegister.instruction.concatInstruction << 6) >>> 6; // 36847648
 
     let readData1 = this.registers.array[rs];
     let readData2 = this.registers.array[rt];
@@ -83,6 +101,7 @@ class Simulator {
       this.IFIDRegister.pc,
       readData1,
       readData2,
+      shamt,
       funct,
       signExtend,
       rt,
@@ -131,6 +150,16 @@ class Simulator {
       this.IDEXRegister.control.RegWrite = 0;
     } else if (opcode === 8) {
       // addi
+      this.IDEXRegister.control.ALUOp0 = 0;
+      this.IDEXRegister.control.ALUOp1 = 0;
+      this.IDEXRegister.control.ALUSrc = 1;
+      this.IDEXRegister.control.Branch = 0;
+      this.IDEXRegister.control.MemRead = 0;
+      this.IDEXRegister.control.MemWrite = 0;
+      this.IDEXRegister.control.MemWrite = 0;
+      this.IDEXRegister.control.MemToReg = 0;
+      this.IDEXRegister.control.RegDst = 0;
+      this.IDEXRegister.control.RegWrite = 1;
     } else if (opcode === 35) {
       // lw
       this.IDEXRegister.control.ALUOp0 = 0;
@@ -156,6 +185,8 @@ class Simulator {
       this.IDEXRegister.control.RegDst = null;
       this.IDEXRegister.control.RegWrite = 0;
     }
+    console.log("IDEX REGISTER");
+    console.log(this.IDEXRegister);
   }
 
   execute() {
@@ -168,38 +199,51 @@ class Simulator {
     // ALUControl
     let ALUControlCode;
     if (
-      !(this.IDEXRegister.control.ALUOp0 && this.IDEXRegister.control.ALUOp1)
+      !(this.IDEXRegister.control.ALUOp0 || this.IDEXRegister.control.ALUOp1)
     ) {
       // 00
+      console.log("test1");
       ALUControlCode = 0b010; // (add)
     } else if (this.IDEXRegister.control.ALUOp1) {
       // X1 (branch)
+      console.log("test2");
       ALUControlCode = 0b110; // (sub)
     } else if (this.IDEXRegister.control.ALUOp0) {
       // arithmetic. check funct field.
-      let last4bits = (this.IDEXRegister.funct << 28) >>> 28;
-      if (last4bits === 0b0000) {
+      let funct = this.IDEXRegister.funct;
+      console.log("got here and funct is " + funct);
+      if (funct === 0b100000) {
         ALUControlCode = 0b010; // (add)
-      } else if (last4bits === 0b0010) {
+      } else if (funct === 0b100010) {
         ALUControlCode = 0b110; // (sub)
-      } else if (last4bits === 0b0100) {
+      } else if (funct === 0b100100) {
         ALUControlCode = 0b000; // (and)
-      } else if (last4bits === 0b0101) {
+      } else if (funct === 0b100101) {
         ALUControlCode = 0b001; // (or)
-      } else if (last4bits === 0b1010) {
+      } else if (funct === 0b101010) {
         ALUControlCode = 0b111; // (slt)
+      } else if (funct === 0b000000) {
+        ALUControlCode = 0b011; // (slt)
       }
     }
+
+    // multiplexer for first argument // TODO not sure if this is right
+    let aluFirstValue =
+      this.IDEXRegister.control.ALUOp0 && this.IDEXRegister.funct === 0b000000
+        ? this.IDEXRegister.shamt
+        : this.IDEXRegister.readData1;
 
     // defining ALUSrc (multiplexer)
     let aluSrcValue = this.IDEXRegister.control.ALUSrc
       ? this.IDEXRegister.signExtend
       : this.IDEXRegister.readData2;
 
+
+      console.log("VALUES", ALUControlCode, aluFirstValue, aluSrcValue);
     // ALU
     let [zero, result] = this.alu.operation(
       ALUControlCode,
-      this.IDEXRegister.readData1,
+      aluFirstValue,
       aluSrcValue
     );
 
@@ -216,6 +260,9 @@ class Simulator {
       writeRegister,
       this.IDEXRegister.control
     );
+
+    console.log("EXMEM REGISTER");
+    console.log(this.EXMEMRegister);
   }
 
   memoryAccess() {
@@ -238,17 +285,25 @@ class Simulator {
       this.EXMEMRegister.writeRegister,
       this.EXMEMRegister.control
     );
+
+    console.log("MEMWB REGISTER");
+    console.log(this.MEMWBRegister);
   }
 
   writeBack() {
+    // console.log("MEMWB REGISTER");
+    // console.log(this.MEMWBRegister);
     if (this.MEMWBRegister.control.MemToReg === null) return;
 
-    let writeData = this.MEMWBRegister.control.MemToReg
+    let writeValue = this.MEMWBRegister.control.MemToReg
       ? this.MEMWBRegister.readData
       : this.MEMWBRegister.ALUResult;
+    console.log(this.MEMWBRegister.readData);
+    console.log(this.MEMWBRegister.ALUResult);
+    console.log(writeValue);
 
     if (this.MEMWBRegister.control.RegWrite) {
-      this.registers.array[this.MEMWBRegister.writeRegister] = writeData;
+      this.registers.array[this.MEMWBRegister.writeRegister] = writeValue;
     }
   }
 }

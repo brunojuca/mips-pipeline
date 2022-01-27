@@ -2,6 +2,7 @@ class IDEXRegister {
   pc;
   readData1;
   readData2;
+  shamt;
   funct;
   signExtend;
   rt;
@@ -19,10 +20,11 @@ class IDEXRegister {
     MemToReg: 0,
   }
 
-  update(pc, readData1, readData2, funct, signExtend, rt, rd) {
+  update(pc, readData1, readData2, shamt, funct, signExtend, rt, rd) {
     this.pc = pc;
     this.readData1 = readData1;
     this.readData2 = readData2;
+    this.shamt = shamt;
     this.funct = funct;
     this.signExtend = signExtend;
     this.rt = rt;
