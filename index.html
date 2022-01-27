@@ -56,16 +56,16 @@
 
       <div id="controls">
         <button>Run</button>
-        <button onclick="step() ">Step</button>
+        <button onclick="step()">Step</button>
         <button>Stop</button>
-        <button>Reset</button>
+        <button onclick="reset()">Reset</button>
       </div>
 
       <h2>Stats:</h2>
 
       <div id="stats">
-        <p>Clock:</p>
-        <p>PC value:</p>
+        <p>Clock: <span id="clock">0</span></p>
+        <p>PC value: <span id="pc">0</span></p>
       </div>
       <div id="registersContainer">
         <div id="sRegisters" class="registersTable">
@@ -76,35 +76,35 @@
             </tr>
             <tr>
               <td>s0</td>
-              <td>0</td>
+              <td id="s0-value">0</td>
             </tr>
             <tr>
               <td>s1</td>
-              <td>0</td>
+              <td id="s1-value">0</td>
             </tr>
             <tr>
               <td>s2</td>
-              <td>0</td>
+              <td id="s2-value">0</td>
             </tr>
             <tr>
               <td>s3</td>
-              <td>0</td>
+              <td id="s3-value">0</td>
             </tr>
             <tr>
               <td>s4</td>
-              <td>0</td>
+              <td id="s4-value">0</td>
             </tr>
             <tr>
               <td>s5</td>
-              <td>0</td>
+              <td id="s5-value">0</td>
             </tr>
             <tr>
               <td>s6</td>
-              <td>0</td>
+              <td id="s6-value">0</td>
             </tr>
             <tr>
               <td>s7</td>
-              <td>0</td>
+              <td id="s7-value">0</td>
             </tr>
           </table>
         </div>
@@ -117,43 +117,43 @@
             </tr>
             <tr>
               <td>t0</td>
-              <td>0</td>
+              <td id="t0-value">0</td>
             </tr>
             <tr>
               <td>t1</td>
-              <td>0</td>
+              <td id="t1-value">0</td>
             </tr>
             <tr>
               <td>t2</td>
-              <td>0</td>
+              <td id="t2-value">0</td>
             </tr>
             <tr>
               <td>t3</td>
-              <td>0</td>
+              <td id="t3-value">0</td>
             </tr>
             <tr>
               <td>t4</td>
-              <td>0</td>
+              <td id="t4-value">0</td>
             </tr>
             <tr>
               <td>t5</td>
-              <td>0</td>
+              <td id="t5-value">0</td>
             </tr>
             <tr>
               <td>t6</td>
-              <td>0</td>
+              <td id="t6-value">0</td>
             </tr>
             <tr>
               <td>t7</td>
-              <td>0</td>
+              <td id="t7-value">0</td>
             </tr>
             <tr>
               <td>t8</td>
-              <td>0</td>
+              <td id="t8-value">0</td>
             </tr>
             <tr>
               <td>t9</td>
-              <td>0</td>
+              <td id="t9-value">0</td>
             </tr>
           </table>
         </div>
@@ -166,19 +166,19 @@
             </tr>
             <tr>
               <td>a0</td>
-              <td>0</td>
+              <td id="a0-value">0</td>
             </tr>
             <tr>
               <td>a1</td>
-              <td>0</td>
+              <td id="a1-value">0</td>
             </tr>
             <tr>
               <td>a2</td>
-              <td>0</td>
+              <td id="a2-value">0</td>
             </tr>
             <tr>
               <td>a3</td>
-              <td>0</td>
+              <td id="a3-value">0</td>
             </tr>
           </table>
         </div>
@@ -191,11 +191,11 @@
             </tr>
             <tr>
               <td>v0</td>
-              <td>0</td>
+              <td id="v0-value">0</td>
             </tr>
             <tr>
               <td>v1</td>
-              <td>0</td>
+              <td id="v1-value">0</td>
             </tr>
           </table>
         </div>
@@ -239,8 +239,12 @@
     <script src="./src/modules/ALU.js"></script>
     <script src="./src/modules/ControlUnit.js"></script>
     <script src="./src/modules/DataMemory.js"></script>
+    <script src="./src/modules/EXMEMRegister.js"></script>
     <script src="./src/modules/HazardDetector.js"></script>
+    <script src="./src/modules/IDEXRegister.js"></script>
+    <script src="./src/modules/IFIDRegister.js"></script>
     <script src="./src/modules/InstructionMemory.js"></script>
+    <script src="./src/modules/MEMWBResgister.js"></script>
     <script src="./src/modules/Registers.js"></script>
 
     <script src="./src/stages/Execute.js"></script>
