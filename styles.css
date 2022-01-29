@@ -5,3 +5,7 @@
 .registersTable {
     margin-right: 50px;
 }
+
+#textInputField {
+    width: 250px;
+}

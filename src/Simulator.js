@@ -116,7 +116,6 @@ class Simulator {
       this.IDEXRegister.control.Branch = 0;
       this.IDEXRegister.control.MemRead = 0;
       this.IDEXRegister.control.MemWrite = 0;
-      this.IDEXRegister.control.MemWrite = 0;
       this.IDEXRegister.control.MemToReg = 0;
       this.IDEXRegister.control.RegDst = 1;
       this.IDEXRegister.control.RegWrite = 1;
@@ -132,18 +131,16 @@ class Simulator {
       this.IDEXRegister.control.Branch = 1;
       this.IDEXRegister.control.MemRead = 0;
       this.IDEXRegister.control.MemWrite = 0;
-      this.IDEXRegister.control.MemWrite = 0;
       this.IDEXRegister.control.MemToReg = null;
       this.IDEXRegister.control.RegDst = null;
       this.IDEXRegister.control.RegWrite = 0;
     } else if (opcode === 5) {
       // bne
-      this.IDEXRegister.control.ALUOp0 = 0;
+      this.IDEXRegister.control.ALUOp0 = 1;
       this.IDEXRegister.control.ALUOp1 = 1;
       this.IDEXRegister.control.ALUSrc = 0;
       this.IDEXRegister.control.Branch = 1;
       this.IDEXRegister.control.MemRead = 0;
-      this.IDEXRegister.control.MemWrite = 0;
       this.IDEXRegister.control.MemWrite = 0;
       this.IDEXRegister.control.MemToReg = null;
       this.IDEXRegister.control.RegDst = null;
@@ -156,7 +153,6 @@ class Simulator {
       this.IDEXRegister.control.Branch = 0;
       this.IDEXRegister.control.MemRead = 0;
       this.IDEXRegister.control.MemWrite = 0;
-      this.IDEXRegister.control.MemWrite = 0;
       this.IDEXRegister.control.MemToReg = 0;
       this.IDEXRegister.control.RegDst = 0;
       this.IDEXRegister.control.RegWrite = 1;
@@ -168,7 +164,6 @@ class Simulator {
       this.IDEXRegister.control.Branch = 0;
       this.IDEXRegister.control.MemRead = 1;
       this.IDEXRegister.control.MemWrite = 0;
-      this.IDEXRegister.control.MemWrite = 0;
       this.IDEXRegister.control.MemToReg = 1;
       this.IDEXRegister.control.RegDst = 0;
       this.IDEXRegister.control.RegWrite = 1;
@@ -179,7 +174,6 @@ class Simulator {
       this.IDEXRegister.control.ALUSrc = 1;
       this.IDEXRegister.control.Branch = 0;
       this.IDEXRegister.control.MemRead = 0;
-      this.IDEXRegister.control.MemWrite = 0;
       this.IDEXRegister.control.MemWrite = 1;
       this.IDEXRegister.control.MemToReg = null;
       this.IDEXRegister.control.RegDst = null;
@@ -223,7 +217,7 @@ class Simulator {
       } else if (funct === 0b101010) {
         ALUControlCode = 0b111; // (slt)
       } else if (funct === 0b000000) {
-        ALUControlCode = 0b011; // (slt)
+        ALUControlCode = 0b011; // (sll)
       }
     }
 
@@ -268,6 +262,11 @@ class Simulator {
   memoryAccess() {
     let readData = null;
 
+    // branch condition and pc multiplexer
+    if (this.EXMEMRegister.control.Branch && this.EXMEMRegister.ALUzero) {
+      
+    }
+
     if (this.EXMEMRegister.control.MemRead) {
       readData = this.dataMemory.readData(this.EXMEMRegister.ALUresult);
     }
@@ -288,6 +287,7 @@ class Simulator {
 
     console.log("MEMWB REGISTER");
     console.log(this.MEMWBRegister);
+    console.log(this.dataMemory);
   }
 
   writeBack() {
