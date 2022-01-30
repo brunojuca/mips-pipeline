@@ -232,8 +232,7 @@ class Simulator {
       ? this.IDEXRegister.signExtend
       : this.IDEXRegister.readData2;
 
-
-      console.log("VALUES", ALUControlCode, aluFirstValue, aluSrcValue);
+    console.log("VALUES", ALUControlCode, aluFirstValue, aluSrcValue);
     // ALU
     let [zero, result] = this.alu.operation(
       ALUControlCode,
@@ -262,9 +261,17 @@ class Simulator {
   memoryAccess() {
     let readData = null;
 
+    // 00100001100011000000000000000001  loop somador
+    // 00100001101011010000000000000001
+    // 00100001110011100000000000000001
+    // 00100001111011110000000000000001
+    // 00010010000100011111111111111011
+
     // branch condition and pc multiplexer
     if (this.EXMEMRegister.control.Branch && this.EXMEMRegister.ALUzero) {
-      
+      console.log("HELLOOOOOOOOOOO");
+      console.log(this.EXMEMRegister.pcShifted);
+      this.pc = this.EXMEMRegister.pcShifted;
     }
 
     if (this.EXMEMRegister.control.MemRead) {
