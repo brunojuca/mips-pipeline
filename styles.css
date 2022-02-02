@@ -9,3 +9,9 @@
 #textInputField {
     width: 250px;
 }
+
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }

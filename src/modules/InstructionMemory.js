@@ -4,12 +4,6 @@ class InstructionMemory {
   constructor() {}
 
   #addInstruction(reference, instructionString) {
-    // console.log("ref: " + reference);
-    // console.log("inst: " + instructionString);
-    // console.log("slice1: " + instructionString.slice(0, 8));
-    // console.log("slice2: " + instructionString.slice(8, 16));
-    // console.log("slice3: " + instructionString.slice(16, 24));
-    // console.log("slice4: " + instructionString.slice(24, 32));
     this.instructionsArray[reference * 4 + 0] = parseInt(
       instructionString.slice(0, 8),
       2
@@ -31,15 +25,18 @@ class InstructionMemory {
   loadInstructions(instructionsString) {
     let arr = instructionsString.split("\n");
     arr = arr.filter(String);
-    // console.log(arr);
     this.instructionsArray = new Uint8Array(4 * arr.length);
 
     arr.forEach((inst, index) => {
-      this.#addInstruction(index, inst);
+      let onlyInst = inst.slice(0, 32);
+      this.#addInstruction(index, onlyInst);
     });
   }
 
   getByte(address) {
+    if (address >= this.instructionsArray.length) {
+      return null;
+    }
     return this.instructionsArray[address];
   }
 
@@ -50,7 +47,6 @@ class InstructionMemory {
   printArray() {
     if (!this.instructionsArray instanceof Uint8Array) return;
     this.instructionsArray.forEach((byte, index) => {
-      console.log(index + ": " + (byte >>> 0).toString(2));
     });
   }
 }

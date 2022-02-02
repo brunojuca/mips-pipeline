@@ -55,7 +55,7 @@
       <h2>Controls:</h2>
 
       <div id="controls">
-        <button>Run</button>
+        <button onclick="run()">Run</button>
         <button onclick="step()">Step</button>
         <button>Stop</button>
         <button onclick="reset()">Reset</button>
@@ -205,32 +205,26 @@
           <tr>
             <th>Stage</th>
             <th>Instruction (bits)</th>
-            <th>Instruction</th>
           </tr>
           <tr>
             <td>Instruction Fecth</td>
             <td id="ifBits"></td>
-            <td></td>
           </tr>
           <tr>
             <td>Instruction Decode</td>
             <td id="idBits"></td>
-            <td></td>
           </tr>
           <tr>
             <td>Execute</td>
             <td id="exBits"></td>
-            <td></td>
           </tr>
           <tr>
             <td>Memory Access</td>
             <td id="memBits"></td>
-            <td></td>
           </tr>
           <tr>
             <td>Write Back</td>
             <td id="wbBits"></td>
-            <td></td>
           </tr>
         </table>
       </div>

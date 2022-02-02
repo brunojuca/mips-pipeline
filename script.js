@@ -2,6 +2,33 @@ let inputMode = "";
 let instructions = "";
 let simulator;
 
+const registers = {
+  16: "s0",
+  17: "s1",
+  18: "s2",
+  19: "s3",
+  20: "s4",
+  21: "s5",
+  22: "s6",
+  23: "s7",
+  8: "t0",
+  9: "t1",
+  10: "t2",
+  11: "t3",
+  12: "t4",
+  13: "t5",
+  14: "t6",
+  15: "t7",
+  24: "t8",
+  25: "t9",
+  4: "a0",
+  5: "a1",
+  6: "a2",
+  7: "a3",
+  2: "v0",
+  3: "v1",
+};
+
 function handleRadioClick() {
   let textDiv = document.getElementById("textInputDiv");
   let fileDiv = document.getElementById("fileInputDiv");
@@ -11,12 +38,10 @@ function handleRadioClick() {
     fileDiv.style.display = "block";
     textDiv.style.display = "none";
     inputMode = "file";
-    console.log("Input mode is " + inputMode);
   } else {
     fileDiv.style.display = "none";
     textDiv.style.display = "block";
     inputMode = "text";
-    console.log("Input mode is " + inputMode);
   }
 }
 
@@ -36,6 +61,18 @@ function handleTextChange(event) {
   instructions = event.target.value;
 }
 
+function run() {
+  if (instructions === "") {
+    alert("No instructions were given to the simulator");
+    return;
+  }
+
+  if (!simulator) simulator = new Simulator(instructions);
+
+  simulator.run();
+  updateInterface();
+}
+
 function step() {
   if (instructions === "") {
     alert("No instructions were given to the simulator");
@@ -45,36 +82,15 @@ function step() {
   if (!simulator) simulator = new Simulator(instructions);
 
   simulator.step();
+  updateInterface();
+}
+
+function updateInterface() {
   if (simulator.clock)
     document.getElementById("clock").innerText = simulator.clock;
+  else document.getElementById("clock").innerText = 0;
   if (simulator.pc) document.getElementById("pc").innerText = simulator.pc;
-
-  const registers = {
-    16: "s0",
-    17: "s1",
-    18: "s2",
-    19: "s3",
-    20: "s4",
-    21: "s5",
-    22: "s6",
-    23: "s7",
-    8: "t0",
-    9: "t1",
-    10: "t2",
-    11: "t3",
-    12: "t4",
-    13: "t5",
-    14: "t6",
-    15: "t7",
-    24: "t8",
-    25: "t9",
-    4: "a0",
-    5: "a1",
-    6: "a2",
-    7: "a3",
-    2: "v0",
-    3: "v1",
-  };
+  else document.getElementById("pc").innerText = 0;
 
   for (const key in registers) {
     const value = registers[key];
@@ -100,6 +116,10 @@ function step() {
 }
 
 function reset() {
+  simulator = new Simulator("oi");
+
+  updateInterface();
+
   simulator = undefined;
 
   document.getElementById("ifBits").innerText = null;

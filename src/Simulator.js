@@ -2,10 +2,14 @@ class Simulator {
   instructionMemory = new InstructionMemory();
   registers = new Registers();
   alu = new ALU();
-  dataMemory = new DataMemory();
+  dataMemory = new DataMemory(128);
 
   pc;
   clock;
+
+  stop = false;
+  gotNull = false;
+  afterStop = 4;
 
   instructionFetched;
 
@@ -34,13 +38,23 @@ class Simulator {
     this.instructionInID = this.instructionInIF;
   }
 
+  run() {
+    while (!this.stop) {
+      this.step();
+    }
+  }
+
   step() {
+    if (this.gotNull) {
+      this.afterStop--;
+    }
+
+    if (this.afterStop <= 0) {
+      this.stop = true;
+      return;
+    }
+
     this.updatePipeline();
-    console.log("InIF: ", this.instructionInIF);
-    console.log("InID: ", this.instructionInID);
-    console.log("InEX: ", this.instructionInEX);
-    console.log("InMEM: ", this.instructionInMEM);
-    console.log("InWB: ", this.instructionInWB);
 
     if (this.instructionInWB && this.instructionInWB.concatInstruction)
       this.writeBack();
@@ -53,6 +67,11 @@ class Simulator {
     this.instructionFetch();
 
     this.clock += 1;
+
+    console.log("DATA MEMORY");
+    console.log(this.dataMemory);
+
+    return this.instructionFetched.concatInstruction != NaN;
   }
 
   instructionFetch() {
@@ -60,6 +79,10 @@ class Simulator {
     let byte1 = this.instructionMemory.getByte(this.pc + 1);
     let byte2 = this.instructionMemory.getByte(this.pc + 2);
     let byte3 = this.instructionMemory.getByte(this.pc + 3);
+
+    if (byte0 === null) {
+      this.gotNull = true;
+    }
 
     this.instructionFetched = new Instruction(byte0, byte1, byte2, byte3);
 
@@ -69,9 +92,6 @@ class Simulator {
     this.pc += 4;
 
     this.IFIDRegister.update(this.pc, this.instructionFetched);
-
-    console.log("IFID REGISTER");
-    console.log(this.IFIDRegister);
   }
 
   instructionDecode() {
@@ -179,8 +199,6 @@ class Simulator {
       this.IDEXRegister.control.RegDst = null;
       this.IDEXRegister.control.RegWrite = 0;
     }
-    console.log("IDEX REGISTER");
-    console.log(this.IDEXRegister);
   }
 
   execute() {
@@ -196,16 +214,18 @@ class Simulator {
       !(this.IDEXRegister.control.ALUOp0 || this.IDEXRegister.control.ALUOp1)
     ) {
       // 00
-      console.log("test1");
       ALUControlCode = 0b010; // (add)
     } else if (this.IDEXRegister.control.ALUOp1) {
       // X1 (branch)
-      console.log("test2");
-      ALUControlCode = 0b110; // (sub)
+      if (this.IDEXRegister.control.ALUOp0 == 1) {
+        // bne
+        ALUControlCode = 0b100; // (sub bne)
+      } else {
+        ALUControlCode = 0b110; // (sub)
+      }
     } else if (this.IDEXRegister.control.ALUOp0) {
       // arithmetic. check funct field.
       let funct = this.IDEXRegister.funct;
-      console.log("got here and funct is " + funct);
       if (funct === 0b100000) {
         ALUControlCode = 0b010; // (add)
       } else if (funct === 0b100010) {
@@ -232,7 +252,6 @@ class Simulator {
       ? this.IDEXRegister.signExtend
       : this.IDEXRegister.readData2;
 
-    console.log("VALUES", ALUControlCode, aluFirstValue, aluSrcValue);
     // ALU
     let [zero, result] = this.alu.operation(
       ALUControlCode,
@@ -253,9 +272,6 @@ class Simulator {
       writeRegister,
       this.IDEXRegister.control
     );
-
-    console.log("EXMEM REGISTER");
-    console.log(this.EXMEMRegister);
   }
 
   memoryAccess() {
@@ -265,12 +281,10 @@ class Simulator {
     // 00100001101011010000000000000001
     // 00100001110011100000000000000001
     // 00100001111011110000000000000001
-    // 00010010000100011111111111111011
+    //
 
     // branch condition and pc multiplexer
     if (this.EXMEMRegister.control.Branch && this.EXMEMRegister.ALUzero) {
-      console.log("HELLOOOOOOOOOOO");
-      console.log(this.EXMEMRegister.pcShifted);
       this.pc = this.EXMEMRegister.pcShifted;
     }
 
@@ -291,23 +305,14 @@ class Simulator {
       this.EXMEMRegister.writeRegister,
       this.EXMEMRegister.control
     );
-
-    console.log("MEMWB REGISTER");
-    console.log(this.MEMWBRegister);
-    console.log(this.dataMemory);
   }
 
   writeBack() {
-    // console.log("MEMWB REGISTER");
-    // console.log(this.MEMWBRegister);
     if (this.MEMWBRegister.control.MemToReg === null) return;
 
     let writeValue = this.MEMWBRegister.control.MemToReg
       ? this.MEMWBRegister.readData
       : this.MEMWBRegister.ALUResult;
-    console.log(this.MEMWBRegister.readData);
-    console.log(this.MEMWBRegister.ALUResult);
-    console.log(writeValue);
 
     if (this.MEMWBRegister.control.RegWrite) {
       this.registers.array[this.MEMWBRegister.writeRegister] = writeValue;
